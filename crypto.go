@@ -1,0 +1,62 @@
+package main
+
+import (
+	"bytes"
+	"io"
+	"os"
+
+	"filippo.io/age"
+	"filippo.io/age/armor"
+)
+
+const secFile string = "test.age"
+
+func writeEnc(txt string, pass string) error {
+  recipient, err := age.NewScryptRecipient(pass)
+  if err != nil {
+    return 0, err
+  }
+
+  out, err := os.OpenFile(secFile, os.O_RDWR | os.O_CREATE | os.O_TRUNC, 0600)
+  if err != nil {
+    return 0, err
+  }
+  defer out.Close()
+
+  armorWriter := armor.NewWriter(out)
+  defer armorWriter.Close()
+
+  w, err := age.Encrypt(armorWriter, recipient)
+  if err != nil {
+    return 0, err
+  }
+  defer w.Close()
+
+  if _, err := io.WriteString(w, txt); err != nil {
+    return 0, err
+  }
+
+  return nil
+}
+
+func readEnc(pass string) (string, error) {
+  identity, err := age.NewScryptIdentity(pass)
+  if err != nil {
+    return "", err
+  }
+
+  out := &bytes.Buffer{}
+  in, err := os.Open(secFile)
+  if err != nil {
+    return "", err
+  }
+
+  defer in.Close()
+  armorReader := armor.NewReader(in)
+  r, err := age.Decrypt(armorReader, identity)
+  if err != nil {
+    return "", err
+  }
+
+  return out.String(), nil
+}
