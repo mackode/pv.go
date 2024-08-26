@@ -1,6 +1,6 @@
 package main
 
-func masks(s string) string {
+func mask(s string) string {
   masked := []byte(s)
   tomask := false
 
@@ -11,7 +11,7 @@ func masks(s string) string {
       masked[i] = s[i]
     }
 
-    if s[i] == '' {
+    if s[i] == ' ' {
       tomask = true
     }
   }

@@ -4,8 +4,7 @@ import (
 	"bytes"
 	"io"
 	"os"
-
-	"filippo.io/age"
+  "filippo.io/age"
 	"filippo.io/age/armor"
 )
 
@@ -14,12 +13,12 @@ const secFile string = "test.age"
 func writeEnc(txt string, pass string) error {
   recipient, err := age.NewScryptRecipient(pass)
   if err != nil {
-    return 0, err
+    return err
   }
 
   out, err := os.OpenFile(secFile, os.O_RDWR | os.O_CREATE | os.O_TRUNC, 0600)
   if err != nil {
-    return 0, err
+    return err
   }
   defer out.Close()
 
@@ -28,12 +27,12 @@ func writeEnc(txt string, pass string) error {
 
   w, err := age.Encrypt(armorWriter, recipient)
   if err != nil {
-    return 0, err
+    return err
   }
   defer w.Close()
 
   if _, err := io.WriteString(w, txt); err != nil {
-    return 0, err
+    return err
   }
 
   return nil
@@ -55,6 +54,10 @@ func readEnc(pass string) (string, error) {
   armorReader := armor.NewReader(in)
   r, err := age.Decrypt(armorReader, identity)
   if err != nil {
+    return "", err
+  }
+
+  if _, err := io.Copy(out, r); err != nil {
     return "", err
   }
 
